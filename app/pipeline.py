@@ -1,3 +1,6 @@
+import os
+import sys
+import traceback
 import json
 from apache_beam import  DoFn,ParDo
 import apache_beam as beam
@@ -26,25 +29,63 @@ class RenameKey(DoFn):
         element["_id"] = element.pop("id")
         yield element
 
+class IndexedTuple(DoFn):
+    """
+    Create and indexed tuple
+    """
+    def process(self,element,key):
+        yield (element.get(key),element)
+
+class RecollectData(DoFn):
+    """
+    Recollect properly type
+    """
+    def process(self,element):
+        if "_id" in element[-1].get('left')[0].keys():
+            yield {**element[-1].get('left')[0],**element[-1].get('right')[0]}
+        else:
+            logger.warning(f"{element} has no ID")
+            return
+
+
 
 with beam.Pipeline(options=PipelineOptions()) as p:
-    logger.info("Starting pipeline")
-    input_collection = (
+    try:
+        logger.info("Starting pipeline")
+        input_collection = (
+                p
+                | 'Read from jsonl files' >> beam.io.ReadFromText(os.path.join("input","input*.jsonl"))
+                | 'Prepare input' >> ParDo(PrepareInput())
+                )
+
+        transformed_collection = (
+                input_collection
+                | 'String cleaning' >> beam.Map(lambda d: {k: v.strip() if isinstance(v, str) else v for k, v in d.items()})
+                | 'Rename Keys' >> ParDo(RenameKey())
+                | 'Index tuple' >> ParDo(IndexedTuple(),key="_id")
+                )
+        side_collection = (
             p
-            | 'Read from jsonl files' >> beam.io.ReadFromText("./input/*.jsonl")
-            | 'Prepare input' >> ParDo(PrepareInput()))
-    transformed_collection = (
-            input_collection
-            | 'String cleaning' >> beam.Map(lambda d: {k: v.strip() if isinstance(v, str) else v for k, v in d.items()})
-            | 'Rename Keys' >> ParDo(RenameKey()))
-    
-    output_collection = (
-        transformed_collection
-        | 'WriteToMongoDB' >>  beam.io.WriteToMongoDB(uri='mongodb://admin:admin@mongo:27017/admin',
-                        db='output_db',
-                        coll='output',
-                        batch_size=1000)
-    )
-    logger.info(f"Finished pipeline")
+            | 'Read from side files' >> beam.io.ReadFromText(os.path.join("input","side*.jsonl"))
+            | 'Parse side element' >> ParDo(PrepareInput())
+            | 'Rename side keys' >> ParDo(RenameKey())
+            | 'Index side tuple' >> ParDo(IndexedTuple(),key="_id")
+        )
+        final_collection=(
+             ({'left': transformed_collection, 'right': side_collection} | beam.CoGroupByKey())
+             | 'Recollect data' >> ParDo(RecollectData())
+        )
+
+        output_collection = (
+            final_collection
+            | 'WriteToMongoDB' >>  beam.io.WriteToMongoDB(uri='mongodb://admin:admin@localhost:27017/admin',
+                            db='output_db',
+                            coll='output',
+                            batch_size=1000)
+        )
+        logger.info(f"Finished pipeline")
+    except Exception as exc: 
+        logger.critical(f"An exception occured \n {exc} \n {traceback.print_exc()}")
+        sys.exit(1)
 
 
