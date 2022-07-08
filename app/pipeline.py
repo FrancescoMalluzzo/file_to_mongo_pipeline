@@ -8,19 +8,19 @@ from loguru import logger
 
 class PrepareInput(DoFn):
     """
-    Try to parse the json - if bad-formatted append a dummy element
+    Try to parse the json - else give a warning
     """
     def process(self,element):
         try:
             yield json.loads(element)
         except:
             if isinstance(element,dict):
-                print(f"Element {element['_id']} not valid")
+                logger.warning(f"Element {element['_id']} not valid")
             return
 
 class RenameKey(DoFn):
     """
-    Try to parse the json - if bad-formatted append a dummy element
+    Rename the key id to _id
     """
     def process(self,element):
         element["_id"] = element.pop("id")
