@@ -78,7 +78,7 @@ with beam.Pipeline(options=PipelineOptions()) as p:
 
         output_collection = (
             final_collection
-            | 'WriteToMongoDB' >>  beam.io.WriteToMongoDB(uri='mongodb://admin:admin@localhost:27017/admin',
+            | 'WriteToMongoDB' >>  beam.io.WriteToMongoDB(uri='mongodb://admin:admin@mongo:27017/admin',
                             db='output_db',
                             coll='output',
                             batch_size=1000)
