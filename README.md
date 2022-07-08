@@ -1,6 +1,6 @@
 # **Pipeline to MongoDB**
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)ù
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![Apache Beam](https://img.shields.io/badge/Apache-Beam-yellowgreen?style=for-the-badge&logo=apache)
 ## **Prerequisites**
 - Docker (version 20.10.7+)
