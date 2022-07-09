@@ -11,7 +11,7 @@
 A pipeline written in Apache Beam SDK for Python to bring data from file to MongoDB with the following step:
   - Reading and parsing from file;
   - Stripping string value;
-  - Moved the _id_ key to __id_ to use this as index in Mongo.
+  - Renamed the _id_ key to __id_ to use this as index in Mongo.
 
 Another feature is related to a left join performed by CoGroupByKey and a custom DoFn to recollect data in properly way to ensure bulk writing to MongoDB. For further details [visit Apache Beam docs](https://beam.apache.org/documentation/programming-guide/#cogroupbykey)
 
