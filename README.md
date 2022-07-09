@@ -20,15 +20,15 @@ Another feature is related to a left join performed by CoGroupByKey and a custom
 
 To test application, after cloning this repo, open your terminal and write
 ```bash
-    $ docker-compose up -d mongo-express
+$ docker-compose up -d mongo-express
 ```
 Sometimes, at start time, mongo-express has some problems to start. To fix you need just to restart the container:
 ```bash
-    $ docker-compose restart mongo-express
+$ docker-compose restart mongo-express
 ```
 Finally, you can launch the pipeline after building the container:
 ```bash
-    $ docker-compose build app
-    $ docker-compose up app
+$ docker-compose build app
+$ docker-compose up app
 ```
 To ensure pipeline work properly, please be sure that mongo is reachable. 
